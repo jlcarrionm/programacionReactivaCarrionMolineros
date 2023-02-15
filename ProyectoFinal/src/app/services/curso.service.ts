@@ -1,5 +1,5 @@
 import { Injectable, Pipe } from '@angular/core';
-import { BehaviorSubject, filter, from, map, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, filter, from, map, Observable, of, Subject } from 'rxjs';
 import { Cursos } from '../models/cursos';
 
 @Injectable({
@@ -58,14 +58,10 @@ export class CursoService {
     },
   ];
   private cursos$!: BehaviorSubject<Cursos[]>;
-
   constructor(
-
   ) {
     this.cursos$ = new BehaviorSubject(this.cursos);
   }
-
-
   obtenerCursosPromise(): Promise<Cursos[]>{
     return new Promise((resolve, reject) => {
       if(this.cursos.length > 0){
@@ -75,31 +71,31 @@ export class CursoService {
       }
     });
    }
-
    obtenerCursosObservable$(): Observable<Cursos[]>{
 
     return this.cursos$.asObservable();
   }
 
-
-
-  obtenerCurso(curso: any): Promise<Cursos[]>{
+  obtenerCurso(cursoVariable: string): Promise<Cursos[]>{
     return new Promise((resolve, reject) => {
       if(this.cursos.length > 0){
-        resolve(this.cursos.filter(x => x.comision == curso));
-        this.cursos$.next(this.cursos.filter(x => x.comision == curso));
+       /*  resolve(this.cursos.filter(x => x.comision == curso));
+        this.cursos$.next(this.cursos.filter(x => x.comision == curso)); */
+        of(this.cursos).pipe(
+          map((cursos: Cursos[]) => {
+            return cursos.filter((curso: Cursos) => curso.comision === cursoVariable)
+          })
+        ).subscribe((cursos)=>{
+          console.log("Obtenido desde el OF, filtrado por comision", cursos);
+          resolve(cursos);
+          this.cursos$.next(cursos);
+        })
+
       }else{
-        reject(['nO HAY DATOS']);
+        reject([]);
       }
 
     });
   }
-
-
-
-
-
-
-
 
 }

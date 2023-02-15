@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Observable, Subscription, takeUntil, Subject, from, map } from 'rxjs';
+import { Observable, Subscription, takeUntil, Subject, from, map, of, filter, mergeMap, interval } from 'rxjs';
 import { CursoService } from 'src/app/services/curso.service';
 import { Cursos } from '../../../models/cursos';
 
@@ -16,12 +16,18 @@ export class ListaCursosComponent implements OnInit, OnDestroy{
   private destroy$ = new Subject<any>();
   comision: string = '';
   profesor: string = '';
+
+
+  private myArrayOf$!: Observable<Cursos[]>;
+
 /*   srcObject = from(this.cursos
     ); */
 
   constructor(
     private cursoService: CursoService
-  ){}
+  ){
+
+  }
 
   ngOnInit() {
     this.cursos$ = this.cursoService.obtenerCursosObservable$();
@@ -32,9 +38,39 @@ export class ListaCursosComponent implements OnInit, OnDestroy{
 
     this.numberCurso = this.cursos.length;
 
-   /*  this.srcObject
-    .pipe(map(data => { return data.profesor.nombre + ' ' + data.profesor.apellido }))
-  .subscribe(data => { console.log('data',data) }) */
+   /*  of(this.cursos).subscribe((cursos)=> {
+      console.log('Obtenido desde el Of', cursos)
+    }) */
+
+   /*  from(this.cursos).subscribe((cursos)=> {
+      console.log('Obtenido desde el From',cursos)
+    })
+ */
+
+    //Pipe con filter
+    from(this.cursos).pipe(
+      filter((curso: Cursos) => curso.comision === '505051')
+    ).subscribe((curso: Cursos) => console.log('cursoFilter',curso))
+
+   //Pipe con Map
+    of(this.cursos).pipe(
+      map((cursos: Cursos[]) => {
+        return cursos.filter((curso: Cursos) => curso.comision === '505051')
+      })
+    ).subscribe((cursos)=>{
+      console.log("Obtenido desde el OF, filtrado por nombre", cursos);
+    })
+
+   /*  of(this.cursos).pipe(
+      mergeMap((cursos: Cursos[]) => {
+        return interval(1000).pipe(map((i => {
+          return i + cursos[i].nombre
+        })));
+      })
+    ).subscribe((datos) => console.log('Utilizando mergeMap', datos));
+ */
+
+
 
     }
 
